@@ -164,9 +164,9 @@ td.ctrl-sel .sheet-cell{color:var(--yellow);}
 ::-webkit-scrollbar-track{background:var(--bg);}
 ::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px;}
 </style>
-<!-- Firebase SDKs (compat version - mais estável) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyBrDha2iQO-50gLlkV6PrlF_VctmInmgd0",
@@ -178,16 +178,35 @@ td.ctrl-sel .sheet-cell{color:var(--yellow);}
     appId: "1:423218770378:web:6a84d691de72ab5a2e9f33"
   };
 
-  try {
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    window._fbSet = function(path, data){ return db.ref(path).set(data); };
-    window._fbOn  = function(path, cb){   db.ref(path).on("value", snap=>cb(snap.val())); };
-    window._fbGet = function(path){       return db.ref(path).once("value").then(s=>s.val()); };
-    window._fbReady = true;
-    window.dispatchEvent(new Event("firebase-ready"));
-  } catch(e) {
-    console.error("Firebase erro:", e);
+  function tentarConectarFirebase() {
+    try {
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      const db = firebase.database();
+      // Testar conexão real
+      db.ref(".info/connected").on("value", function(snap) {
+        if (snap.val() === true) {
+          window._fbReady = true;
+          window._fbSet = function(path, data){ return db.ref(path).set(data); };
+          window._fbOn  = function(path, cb){   db.ref(path).on("value", snap=>cb(snap.val())); };
+          window._fbGet = function(path){       return db.ref(path).once("value").then(s=>s.val()); };
+          window.dispatchEvent(new Event("firebase-ready"));
+          // Esconder banner
+          const banner = document.getElementById("firebase-banner");
+          if(banner) banner.style.display = "none";
+        }
+      });
+    } catch(e) {
+      console.error("Firebase erro:", e);
+    }
+  }
+
+  // Aguardar DOM carregar
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", tentarConectarFirebase);
+  } else {
+    tentarConectarFirebase();
   }
 </script>
 </head>
