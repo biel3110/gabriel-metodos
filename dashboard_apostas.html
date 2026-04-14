@@ -164,8 +164,67 @@ td.ctrl-sel .sheet-cell{color:var(--yellow);}
 ::-webkit-scrollbar-track{background:var(--bg);}
 ::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px;}
 </style>
+<!-- Firebase SDKs -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  // ============================================================
+  // COLE AQUI SUA CONFIG DO FIREBASE (veja instruções abaixo)
+  // ============================================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyBrDha2iQO-50gLlkV6PrlF_VctmInmgd0",
+    authDomain: "planilha-dashboard.firebaseapp.com",
+    databaseURL: "https://planilha-dashboard-default-rtdb.firebaseio.com",
+    projectId: "planilha-dashboard",
+    storageBucket: "planilha-dashboard.firebasestorage.app",
+    messagingSenderId: "423218770378",
+    appId: "1:423218770378:web:6a84d691de72ab5a2e9f33"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // Expor funções globalmente para o script principal
+  window._fbSet = function(path, data){ return set(ref(db, path), data); };
+  window._fbOn  = function(path, cb){   onValue(ref(db, path), snap=>cb(snap.val())); };
+  window._fbGet = function(path){       return get(ref(db, path)).then(s=>s.val()); };
+  window._fbReady = true;
+  window.dispatchEvent(new Event("firebase-ready"));
+</script>
 </head>
 <body>
+
+<!-- BANNER SETUP FIREBASE -->
+<div id="firebase-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(90deg,#1a0a2e,#2d1060);border-bottom:2px solid var(--purple-border);padding:10px 20px;display:flex;align-items:center;gap:12px;font-size:13px;">
+  <span style="font-size:18px;">⚠️</span>
+  <span style="color:#e0e0f0;">Firebase não configurado — funcionando em modo offline. <a href="#" onclick="document.getElementById('firebase-setup-modal').style.display='flex';return false;" style="color:var(--purple);text-decoration:underline;">Ver instruções</a></span>
+  <button onclick="document.getElementById('firebase-banner').style.display='none'" style="margin-left:auto;background:transparent;border:none;color:var(--muted2);cursor:pointer;font-size:16px;">✕</button>
+</div>
+
+<!-- MODAL SETUP FIREBASE -->
+<div id="firebase-setup-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10000;align-items:center;justify-content:center;">
+  <div style="background:#0f0f1a;border:1px solid var(--purple-border);border-radius:16px;padding:2rem;max-width:560px;width:93%;max-height:90vh;overflow-y:auto;">
+    <h2 style="color:#fff;font-size:18px;margin-bottom:1rem;">⚙️ Como configurar o Firebase</h2>
+    <div style="font-size:13px;color:var(--muted2);line-height:1.9;">
+      <b style="color:var(--purple);">1.</b> Acesse <a href="https://console.firebase.google.com" target="_blank" style="color:var(--purple);">console.firebase.google.com</a><br>
+      <b style="color:var(--purple);">2.</b> Clique em <b style="color:#fff;">Criar projeto</b> → dê um nome (ex: gabriel-metodos) → desative Google Analytics → Criar<br>
+      <b style="color:var(--purple);">3.</b> No menu lateral clique em <b style="color:#fff;">Build → Realtime Database → Criar banco de dados</b> → escolha a região → Iniciar no <b style="color:#fff;">modo de teste</b><br>
+      <b style="color:var(--purple);">4.</b> No menu lateral clique em <b style="color:#fff;">⚙️ Configurações do projeto → Seus apps → &lt;/&gt; Web</b> → registre o app → copie o objeto <code style="color:var(--purple);">firebaseConfig</code><br>
+      <b style="color:var(--purple);">5.</b> Abra o arquivo <code style="color:var(--purple);">dashboard_apostas.html</code> num editor de texto (Notepad) → procure por <code style="color:var(--purple);">COLE_SUA_API_KEY</code> → substitua com os valores copiados<br>
+      <b style="color:var(--purple);">6.</b> Salve e abra o arquivo no Chrome — pronto! 🎉
+    </div>
+    <div style="margin-top:1.5rem;background:#16162a;border-radius:8px;padding:1rem;font-size:12px;font-family:monospace;color:#a78bfa;">
+      // Exemplo do que você vai colar:<br>
+      apiKey: "AIzaSy...",<br>
+      authDomain: "gabriel-metodos.firebaseapp.com",<br>
+      databaseURL: "https://gabriel-metodos-default-rtdb.firebaseio.com",<br>
+      projectId: "gabriel-metodos",<br>
+      ...
+    </div>
+    <button onclick="document.getElementById('firebase-setup-modal').style.display='none'" style="margin-top:1.5rem;width:100%;padding:10px;border-radius:8px;border:1px solid var(--purple-border);background:var(--purple-bg);color:var(--purple);cursor:pointer;font-family:inherit;font-size:13px;">Entendi</button>
+  </div>
+</div>
 
 <div class="sidebar">
   <div class="logo">GABRIEL<br><span>MÉTODOS</span></div>
@@ -173,6 +232,17 @@ td.ctrl-sel .sheet-cell{color:var(--yellow);}
   <div class="nav-item" onclick="navegar('dashboard',this)"><span class="nav-icon">◈</span> Dashboard Final</div>
   <div class="nav-item" onclick="navegar('pix',this)"><span class="nav-icon">◎</span> Chaves Pix</div>
   <div class="nav-item" onclick="navegar('historico',this)"><span class="nav-icon">◷</span> Histórico</div>
+
+  <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--purple-border);display:flex;flex-direction:column;gap:6px;">
+    <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Backup</div>
+    <button onclick="exportarDados()" style="font-size:12px;padding:8px 10px;border-radius:8px;border:1px solid var(--purple-border);background:var(--purple-bg);color:var(--purple);cursor:pointer;font-family:inherit;text-align:left;transition:all .15s;" onmouseover="this.style.background='rgba(168,85,247,0.15)'" onmouseout="this.style.background='var(--purple-bg)'">
+      💾 Exportar dados
+    </button>
+    <label style="font-size:12px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--muted2);cursor:pointer;font-family:inherit;text-align:left;transition:all .15s;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">
+      📂 Importar dados
+      <input type="file" accept=".json" onchange="importarDados(event)" style="display:none;">
+    </label>
+  </div>
 </div>
 
 <div class="main">
@@ -526,9 +596,22 @@ const bancos=[
   {nome:"Sofisa",      cor:"#e07000",texto:"#fff",    nums:["65976039519","96976058151","66976020465","65976046553","66976021617"]},
 ];
 
-function carregar(){try{const s=localStorage.getItem(SK);if(s)return JSON.parse(s);}catch(e){}return defaultPerfis.map(p=>({...p}));}
-function carregarUsadas(){try{const s=localStorage.getItem(SK_PIX);if(s)return new Set(JSON.parse(s));}catch(e){}return new Set();}
-function salvarUsadas(){try{localStorage.setItem(SK_PIX,JSON.stringify([...usadas]));}catch(e){}}
+// ===== FIREBASE STORAGE =====
+function carregar(){
+  // retorna default; Firebase vai sobrescrever via listener
+  return defaultPerfis.map(p=>({...p}));
+}
+function carregarUsadas(){ return new Set(); }
+
+function salvarUsadas(){
+  if(window._fbReady) window._fbSet("pix_usadas",[...usadas]);
+  else localStorage.setItem(SK_PIX,JSON.stringify([...usadas]));
+}
+
+function fbSalvarPerfis(){
+  if(window._fbReady) window._fbSet("perfis", perfis);
+  else localStorage.setItem(SK, JSON.stringify(perfis));
+}
 
 let perfis=carregar();
 let usadas=carregarUsadas();
@@ -725,7 +808,7 @@ function salvar(){
     const g=c=>parseBRL((tr.querySelector("td[data-campo='"+c+"'] input")||{}).value||"");
     perfis[i].dep=g("dep");perfis[i].saque=g("saque");perfis[i].bau=g("bau");
   });
-  try{localStorage.setItem(SK,JSON.stringify(perfis));}catch(e){}
+  fbSalvarPerfis();
   atualizarTotais();filtrar();
   showToast("Salvo com sucesso","var(--green)");
 }
@@ -735,7 +818,7 @@ function resetTotal(){
   perfis=defaultPerfis.map(p=>({...p,dep:0,saque:0,bau:0}));
   popup1kMostrado=false;
   popup500negMostrado=false;
-  try{localStorage.removeItem(SK);}catch(e){}
+  if(window._fbReady){window._fbSet("perfis",defaultPerfis.map(p=>({...p,dep:0,saque:0,bau:0})));}else{localStorage.removeItem(SK);}
   fecharModal("modal-reset");atualizarTotais();filtrar();
   showToast("Planilha zerada","var(--red)");
 }
@@ -919,6 +1002,46 @@ const ds=new Date().toLocaleDateString("pt-BR",{day:"2-digit",month:"long",year:
 
 atualizarTotais();filtrar();renderPix(bancos);
 
+// ===== LISTENERS FIREBASE EM TEMPO REAL =====
+function iniciarFirebase(){
+  // Perfis
+  window._fbOn("perfis", function(val){
+    if(!val) return;
+    const arr = Array.isArray(val) ? val : Object.values(val);
+    if(arr && arr.length){
+      arr.forEach((p,i)=>{ if(perfis[i]) Object.assign(perfis[i], p); });
+      atualizarTotais();
+      filtrar();
+      showToast("Dados sincronizados ☁️","var(--purple)");
+    }
+  });
+  // Pix usadas
+  window._fbOn("pix_usadas", function(val){
+    if(!val) return;
+    usadas = new Set(Array.isArray(val) ? val : Object.values(val));
+    filtrarPix();
+  });
+  // Histórico
+  window._fbOn("historico", function(val){
+    if(!val){ registros=[]; renderHistorico(); return; }
+    registros = Array.isArray(val) ? val : Object.values(val);
+    registros.sort((a,b)=>a.data.localeCompare(b.data));
+    renderHistorico();
+  });
+}
+
+if(window._fbReady){
+  iniciarFirebase();
+} else {
+  window.addEventListener("firebase-ready", iniciarFirebase);
+  // Se após 3s o Firebase ainda não estiver pronto, mostrar banner
+  setTimeout(function(){
+    if(!window._fbReady){
+      document.getElementById("firebase-banner").style.display="flex";
+    }
+  },3000);
+}
+
 // ========== HISTÓRICO ==========
 const SK_HIST="gabriel_hist_v1";
 let registros=[];
@@ -927,8 +1050,16 @@ let chartBar=null;let chartLine=null;
 function carregarHist(){
   try{const s=localStorage.getItem(SK_HIST);if(s)return JSON.parse(s);}catch(e){}return [];
 }
+function fbCarregarHist(){
+  if(!window._fbReady) return;
+  window._fbGet("historico").then(val=>{
+    registros = Array.isArray(val) ? val : (val ? Object.values(val) : []);
+    renderHistorico();
+  });
+}
 function salvarHist(){
-  try{localStorage.setItem(SK_HIST,JSON.stringify(registros));}catch(e){}
+  if(window._fbReady) window._fbSet("historico", registros.length ? registros : []);
+  else try{localStorage.setItem(SK_HIST,JSON.stringify(registros));}catch(e){}
 }
 
 function adicionarRegistro(){
@@ -1232,6 +1363,52 @@ function mpPrev(){
   mpRender();
   mpStartTimer();
 })();
+
+// ========== BACKUP / EXPORTAR / IMPORTAR ==========
+function exportarDados(){
+  const dados={
+    perfis: JSON.parse(localStorage.getItem("gabriel_metodos_v1")||"[]"),
+    pix: JSON.parse(localStorage.getItem("gabriel_pix_usadas_v1")||"[]"),
+    historico: JSON.parse(localStorage.getItem("gabriel_hist_v1")||"[]"),
+    exportadoEm: new Date().toLocaleString("pt-BR")
+  };
+  const blob=new Blob([JSON.stringify(dados,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  const hoje=new Date();
+  a.download="gabriel_metodos_backup_"+hoje.getDate()+"_"+(hoje.getMonth()+1)+"_"+hoje.getFullYear()+".json";
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast("Backup exportado com sucesso! 💾","var(--purple)");
+}
+
+function importarDados(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      const dados=JSON.parse(ev.target.result);
+      if(dados.perfis) localStorage.setItem("gabriel_metodos_v1",JSON.stringify(dados.perfis));
+      if(dados.pix)    localStorage.setItem("gabriel_pix_usadas_v1",JSON.stringify(dados.pix));
+      if(dados.historico) localStorage.setItem("gabriel_hist_v1",JSON.stringify(dados.historico));
+      // recarregar tudo
+      perfis=carregar();
+      usadas=carregarUsadas();
+      registros=carregarHist();
+      atualizarTotais();
+      filtrar();
+      renderPix(bancos);
+      renderHistorico();
+      showToast("Dados importados com sucesso! ✅","var(--green)");
+      e.target.value="";
+    }catch(err){
+      showToast("Arquivo inválido!","var(--red)");
+    }
+  };
+  reader.readAsText(file);
+}
 
 // ========== COLAR DO GOOGLE SHEETS ==========
 document.addEventListener("paste", function(e){
